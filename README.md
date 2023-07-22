@@ -24,4 +24,4 @@ Attempt at a Gamecube intro animation recreation as a Wii native homebrew .dol u
 - Now everytime you boot up your Wii it should play the animation. If you remove the SD card it should skip the animation and boot straight to the Wii System Menu
 
 ## Why?
-I have built a Wii portable, the Famicom Gboy, and it feels fantastic. The BitBuilt community has done an incredible job on the hardware and software side of things with a really integrated experience. However, I wasn't truly satisfied with RVLoader's splashscreen that doesn't really feel
+I have built a Wii portable, the Famicom Gboy, and it feels fantastic. The BitBuilt community has done an incredible job on the hardware and software side of things with a really integrated experience. However, I wasn't truly satisfied with RVLoader's splashscreen and wanted something that felt closer to the real experience.
