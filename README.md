@@ -1,5 +1,5 @@
 # GC-anim-Wii
-Attempt at a Gamecube intro animation recreation as a Wii native homebrew .dol using Gamecube IPL assets on-the-fly.
+Attempt at a Gamecube intro animation recreation as a Wii native homebrew .dol using Gamecube IPL assets on-the-fly (audio and textures, the 3D models are ripped).
 
 ![image](https://github.com/supertazon/GC-anim-Wii/assets/1402795/73363793-04cc-4457-a1fd-abe6f1c36d65)
 
