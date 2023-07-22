@@ -24,4 +24,15 @@ Attempt at a Gamecube intro animation recreation as a Wii native homebrew .dol u
 - Now everytime you boot up your Wii it should play the animation. If you remove the SD card it should skip the animation and boot straight to the Wii System Menu
 
 ## Why?
-I have built a Wii portable, the Famicom Gboy, and it feels fantastic. The BitBuilt community has done an incredible job on the hardware and software side of things with a really integrated experience. However, I wasn't truly satisfied with RVLoader's splashscreen and wanted something that felt closer to the real experience.
+I have built a Wii portable, the [Famicom Gboy](https://bitbuilt.net/forums/index.php?threads/famicom-gboy.5514/), and it feels fantastic. The BitBuilt community has done an incredible job on the hardware and software side of things with a really integrated experience. However, I wasn't truly satisfied with RVLoader's splashscreen and wanted something that felt closer to the real experience.
+
+## How?
+I didn't want it to be a simple video that would be display at boot up but a real Wii homebrew. The advantages of coding the animation are the freedom to customize it in the future and let the [memes begin](https://www.youtube.com/watch?v=lHE91NaDxLQ). I had learnt a bit of C about 10 years ago and thought it was a reasonable challenge to code a 6-second long animation in C for the Wii. My approach has been really to replicate the animation frame-by-frame best as I could, for example here the tilting of the camera at the right angle when the small cube hits the big cube at the beginning of the animation:
+![anim-ref](https://github.com/supertazon/GC-anim-Wii/assets/1402795/663a137a-8767-4ab7-9c88-92dab8d574be)
+If you look at the source code you'll see that there are different frame and stage counters that track the models positions and update them on a frame-by-frame basis. I apologize for the quality of the source code, as I said this is my real first C project and everything is a bit of a mess with plenty of bad practices I'm sure. Here a couple of WIP GIFs to make up for it:
+
+![1](https://github.com/supertazon/GC-anim-Wii/assets/1402795/9618235d-009b-4ab6-99a3-3d474d0c4314)
+![2](https://github.com/supertazon/GC-anim-Wii/assets/1402795/4bd25d5a-0337-4dee-ae36-de955c6e53af)
+![3](https://github.com/supertazon/GC-anim-Wii/assets/1402795/51d8a90f-e1e5-4e04-879c-c1082d3c458e)
+
+The animation uses libogc, asndlib, and GRRLib as the backbone with other functions detailed below.![image](https://github.com/supertazon/GC-anim-Wii/assets/1402795/410b723e-32e8-45ac-a483-ffbe533a8be4)
