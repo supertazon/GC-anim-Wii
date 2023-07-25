@@ -29,10 +29,44 @@ I have built a Wii portable, the [Famicom Gboy](https://bitbuilt.net/forums/inde
 ## How?
 I didn't want it to be a simple video that would be display at boot up but a real Wii homebrew. The advantages of coding the animation are the freedom to customize it in the future and let the [memes begin](https://www.youtube.com/watch?v=lHE91NaDxLQ). I had learnt a bit of C about 10 years ago and thought it was a reasonable challenge to code a 6-second long animation in C for the Wii. My approach has been really to replicate the animation frame-by-frame best as I could, for example here the tilting of the camera at the right angle when the small cube hits the big cube at the beginning of the animation:
 ![anim-ref](https://github.com/supertazon/GC-anim-Wii/assets/1402795/663a137a-8767-4ab7-9c88-92dab8d574be)
-If you look at the source code you'll see that there are different frame and stage counters that track the models positions and update them on a frame-by-frame basis. I apologize for the quality of the source code, as I said this is my real first C project and everything is a bit of a mess with plenty of bad practices I'm sure. Here a couple of WIP GIFs to make up for it:
+If you look at the source code you'll see that there are different frame and stage counters that track the models positions and update them on a frame-by-frame basis. I apologize for the quality of the source code, as I said this is my real first C project and everything is a bit of a mess with plenty of bad practices I'm sure. Here, have a couple of WIP GIFs to make up for it:
 
 ![1](https://github.com/supertazon/GC-anim-Wii/assets/1402795/9618235d-009b-4ab6-99a3-3d474d0c4314)
 ![2](https://github.com/supertazon/GC-anim-Wii/assets/1402795/4bd25d5a-0337-4dee-ae36-de955c6e53af)
 ![3](https://github.com/supertazon/GC-anim-Wii/assets/1402795/51d8a90f-e1e5-4e04-879c-c1082d3c458e)
 
-The animation uses libogc, asndlib, and GRRLib as the backbone with other functions detailed below.![image](https://github.com/supertazon/GC-anim-Wii/assets/1402795/410b723e-32e8-45ac-a483-ffbe533a8be4)
+The animation uses libogc, asndlib, and GRRLib as the backbone with other functions detailed below.
+
+<a href="https://wiibrew.org/wiki/GRRLIB"><img src="https://github.com/supertazon/GC-anim-Wii/assets/1402795/410b723e-32e8-45ac-a483-ffbe533a8be4" width="20%" height="20%"></a>
+
+## Assets
+Textures and audio tracks are decoded on-the-fly from the Gamecube's IPL. This was made possible thanks to all the reverse engineering work previously made by the community, see further below for the list of resources used in this project.
+
+The IPL is first descrambled, depending on its region it then contains either 14 Yay0 files (NTSC IPL) or 31 Yay0 files (PAL IPL). Some of these Yay0 files contain J3D files (magic J3D1bmd1) which are 3D models produced by Nintendo's [JSYSTEM toolkit](https://wiki.cloudmodding.com/tww/JSYSTEM). Unfortunately these types of early Gamecube models have not been completely reverse engineered. These J3D files contain [all the data to display the 3D models](https://wiki.cloudmodding.com/tww/BMD_and_BDL), including textures which are in [BTI format](https://wiki.cloudmodding.com/tww/BTI). Among the 14 Yay0 files, 9 of them are J3D files covering the different assets used by the IPL (both for the intro animation and the following Gamecube menu). Using [wimgt.exe](https://szs.wiimm.de/wimgt/), I was able to convert the associated BTI texture files to PNG files and identify the textures I needed for this project:
+- The environment texture (which is found in 7 of the 9 J3D model files) for the small cube, bigger cube and NINTENDO letters
+- The texture for the tiles
+- The three textures for the final logo
+- The GAMECUBE written logo
+
+The J3D files containing these textures are always stored in that order no matter the region of the IPL. Knowing exactly the header of each Yay0 file, I could implement a function to correctly find and extract each texture from the descrambled IPL. [Aurelio](https://github.com/Aurelio92/) helped me by providing me with a mini BTI library that made working with BTI files a breeze.
+
+Unfortunately the 3D model part of the J3D files (with magic J3D1bmd1) has not been reverse engineered and I had to settle with using ripped 3D models. I used [NinjaRipper](https://ninjaripper.com/) in combination with Dolphin to get the 3D models for both cubes, the NINTENDO letters, and the tiles.
+
+For the audio part, I mainly referenced this very in-depth video made by SynaMax: [Extracting sounds from the GameCube Main Menu!](https://www.youtube.com/watch?v=FEbcyf8cis4). The audio for the intro animation consists of two tracks: the left and right channel. The audio files are stored as a combination of [WSYS and AW files](https://wiki.cloudmodding.com/tww/AAF#WSYS). The WSYS file contains all the needed information to decode the raw audio AW file (which is ADPCM). Luckily, as mentioned in SynaMax's video, a decoding algorithm was already available and I implemented it into this project: [wsyster](https://github.com/hcs64/vgm_ripping/blob/master/soundbank/wsyster/wsyster.c).
+
+## Source files overview
+- `afcdecoder.c`: contains a modified implementation of wsyster.c
+- `bti.c`: contains Aurelio's mini BTI library
+- `cubes.c`: contains all the functions to display and animate the small rolling cube and the big translucent cube
+- `descrambler.c`: contains the code to descramble the IPL
+- `globals.c`: contains some global variables and a function to initialize graphics
+- `logos.c`: contains all the functions to display and animate the main logo, the GAMECUBE text logo and the NINTENDO letters logo
+- `main.c`: main
+- `models.c`: stores the 3D models in arrays that are just OBJ files exported with Blender, also stores the coordinates for the texture projection on the small rolling cube
+- `tiles.c`: contains all the functions to display and animate the tiles
+- `yay0dec.c`: contains a function that finds the offsets of the needed Yay0 archives and of the AW audio files, and a function to decode Yay0 archives
+
+## Head-to-head comparison
+[![Comparison of the original Gamecube intro animation with GC-anim-Wii]
+(https://img.youtube.com/vi/O4ZZEfldFb8/maxresdefault.jpg)]
+(https://www.youtube.com/watch?v=O4ZZEfldFb8)
