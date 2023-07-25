@@ -67,6 +67,39 @@ For the audio part, I mainly referenced this very in-depth video made by SynaMax
 - `yay0dec.c`: contains a function that finds the offsets of the needed Yay0 archives and of the AW audio files, and a function to decode Yay0 archives
 
 ## Head-to-head comparison
-[![Comparison of the original Gamecube intro animation with GC-anim-Wii]
-(https://img.youtube.com/vi/O4ZZEfldFb8/maxresdefault.jpg)]
-(https://www.youtube.com/watch?v=O4ZZEfldFb8)
+[Gamecube intro animation comparison](https://www.youtube.com/watch?v=O4ZZEfldFb8): as you can see it's very close to the original but not 100% the same.
+
+## Improvements that could be made but that I couldn't implement
+Feel free to fork this project and update it as you see fit, it is very unlikely that I will keep on working on this.
+
+### Improvements on the basic animation
+- **Texture projection on the cubes**: I tried best as I could to replicate the environment texture projection on the small rolling cube and on the big translucent cube. However, comparing them with the original we see many differences. To achieve the texture projection, I followed [this example from the GRRLib github repo](https://github.com/GRRLIB/GRRLIB/tree/master/examples/NEED_GRRLIB_FUNCTION). You are welcome to try and tweak the values to better match the original. Beware as in GC-anim-Wii the texture projection coordinates are stored for each frame of the rolling cube, in arrays with 191 indices.![image](https://github.com/supertazon/GC-anim-Wii/assets/1402795/c0cb9eb2-6bb3-4538-b811-0c392e8289ba)
+- **Color of the cubes**: The environment texture provided by the IPL is grayscale and needs to be colored to get it to indigo. Looking at the picture above, you can see that the color is a bit different, it really shows on the smaller cube. I tried to tweak the TEV stages best as I could but could never manage to get the proper indigo color. I guess this improvement is related to the previous one.
+- **Better antialiasing**: I am simply using GRRLib's `GRRLIB_Settings.antialias = true;` command but the models are a bit jagged around their edges. I am not sure how I can improve this.
+- **Reverse engineering the J3Dbmd1 file format**: and load them on the fly, to not rely on external 3D models. I suspect that this RE work would solve the first two improvements.
+
+### Further improvements for customising the animation
+- **Color customization**: the environment texture is in grayscale thus easy to recolor, same goes for the tile texture. However the logo textures are already in indigo color. It would be nice to be able to recolor them to whatever we want to achieve full color customization, similar to [cubeboot](https://github.com/OffBroadway/flippyboot-ipl/tree/main/cubeboot).
+- **GAMECUBE logo customization**: adding the ability to load an external texture to replace the "GAMECUBEtm" text. Also already implemented into cubeboot. It would be awesome if it could be generated on-the-fly as well.
+- **Controlling the camera with the stick**: to slightly move the camera while the animation plays depending on the stick coordinates. A bit like Smash Bros' character selection screen.
+
+## Acknowledgements
+- [The BitBuilt community](https://bitbuilt.net/): for being awesome and pushing the boundaries of console portablizing
+- [Owen](https://wiibrew.org/wiki/User:Owen): for helping me bootstrap the project and setting up devkitPro correctly, make sure you check out his awesome Wii homebrew games (still developing in 2023)!
+- [Trevor](https://github.com/trevor403): for cubeboot that inspired this project and general guidance regarding the IPL
+- [Aurelio](https://github.com/Aurelio92): for the immense help in Wii homebrew programming and IPL asset extraction
+- [Extrems' Discord server](https://discordapp.com/invite/JZsBV3Bn): for general Wii homebrew development and in particular Luig who has helped me get the texture projection going by fixing the 3D models
+- Nintendo for the excellent games and hardware I've been playing for all these years.
+
+## Resources
+- IPL descrambler: [taken from flippyboot-IPL](https://github.com/OffBroadway/ipl-decoder/blob/main/ext/descrambler.c)
+- Yay0 file decompression: [adapted from ethteck's python script](https://github.com/ethteck/n64decompress/blob/main/Yay0/decompress.py)
+- Audio AFC decoder: [adapted from hcs64's wsyster.c](https://github.com/hcs64/vgm_ripping/blob/master/soundbank/wsyster/wsyster.c)
+- SynaMax's video on Gamecube IPL audio extraction: [Extracting sounds from the GameCube Main Menu](https://www.youtube.com/watch?v=FEbcyf8cis4)
+- BTI file format: [Cloudmodding](https://wiki.cloudmodding.com/tww/BTI)
+- [GRRLib](https://wiibrew.org/wiki/GRRLIB)
+- Tutorial to start Wii homebrew programming from scratch: [Wii Homebrew App Creation Tutorial #1 (Setup and Hello World)](https://www.youtube.com/watch?v=noxGGdxHbDY)
+- Spanish GRRLib tutorial with 11 lessons: [Tutoriales de programación de GRRLIB](https://wii.scenebeta.com/tutorial/tutoriales-de-programacion-de-grrlib)
+- Spanish GX code examples with a nicely made PDF documentation: [Graficos 3D para Wii (PDF + Ejemplos)](https://www.elotrolado.net/hilo_wii-graficos-3d-para-wii-pdf-ejemplos_1049703)
+- French 3D model viewer tutorial using GRRLib: [Intro à la 3D sur Wii](https://web.archive.org/web/20130704023828/http://www.dev-fr.org/index.php/topic,4870.0.html)
+- Notes on setting up TEV stages: [from Amnoid's website](http://amnoid.de/gc/tev.html)
