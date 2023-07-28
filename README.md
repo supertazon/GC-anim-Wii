@@ -1,7 +1,8 @@
 # GC-anim-Wii
 Attempt at a Gamecube intro animation recreation as a Wii native homebrew .dol using Gamecube IPL assets on-the-fly (audio and textures, the 3D models are ripped).
 
-![image](https://github.com/supertazon/GC-anim-Wii/assets/1402795/73363793-04cc-4457-a1fd-abe6f1c36d65)
+![GC- bootscreen](https://github.com/supertazon/GC-anim-Wii/assets/1402795/bdafffc4-9655-401e-831c-f9a3c3e54372)
+
 
 ## How to install
 - You need to have a softmodded Wii capable of launching homebrew. Follow this guide to softmod your Wii: https://wii.guide/. You need the Homebrew Channel installed and Priiloader if you want use use the .dol as a boot up animation.
@@ -31,13 +32,13 @@ I didn't want it to be a simple video that would be display at boot up but a rea
 ![anim-ref](https://github.com/supertazon/GC-anim-Wii/assets/1402795/663a137a-8767-4ab7-9c88-92dab8d574be)
 If you look at the source code you'll see that there are different frame and stage counters that track the models positions and update them on a frame-by-frame basis. I apologize for the quality of the source code, as I said this is my real first C project and everything is a bit of a mess with plenty of bad practices I'm sure. Here, have a couple of WIP GIFs to make up for it:
 
-![1](https://github.com/supertazon/GC-anim-Wii/assets/1402795/9618235d-009b-4ab6-99a3-3d474d0c4314)
-![2](https://github.com/supertazon/GC-anim-Wii/assets/1402795/4bd25d5a-0337-4dee-ae36-de955c6e53af)
-![3](https://github.com/supertazon/GC-anim-Wii/assets/1402795/51d8a90f-e1e5-4e04-879c-c1082d3c458e)
+![1](https://github.com/supertazon/GC-anim-Wii/assets/1402795/20c9860a-9964-4da2-885c-958dceabc8b6)
+![2](https://github.com/supertazon/GC-anim-Wii/assets/1402795/bab31285-2e87-42c9-818e-11f169b3d174)
+![3](https://github.com/supertazon/GC-anim-Wii/assets/1402795/f32635d1-5f33-490a-a2c4-4e6fecb941e6)
 
 The animation uses libogc, asndlib, and GRRLib as the backbone with other functions detailed below.
 
-<a href="https://wiibrew.org/wiki/GRRLIB"><img src="https://github.com/supertazon/GC-anim-Wii/assets/1402795/410b723e-32e8-45ac-a483-ffbe533a8be4" width="20%" height="20%"></a>
+<a href="https://wiibrew.org/wiki/GRRLIB"><img src="https://grrlib.github.io/GRRLIB/grrlib_logo.png" width="20%" height="20%"></a>
 
 ## Assets
 Textures and audio tracks are decoded on-the-fly from the Gamecube's IPL. This was made possible thanks to all the reverse engineering work previously made by the community, see further below for the list of resources used in this project.
@@ -73,7 +74,8 @@ For the audio part, I mainly referenced this very in-depth video made by SynaMax
 Feel free to fork this project and update it as you see fit, it is very unlikely that I will keep on working on this.
 
 ### Improvements on the basic animation
-- **Texture projection on the cubes**: I tried best as I could to replicate the environment texture projection on the small rolling cube and on the big translucent cube. However, comparing them with the original we see many differences. To achieve the texture projection, I followed [this example from the GRRLib github repo](https://github.com/GRRLIB/GRRLIB/tree/master/examples/NEED_GRRLIB_FUNCTION). You are welcome to try and tweak the values to better match the original. Beware as in GC-anim-Wii the texture projection coordinates are stored for each frame of the rolling cube, in arrays with 191 indices.![image](https://github.com/supertazon/GC-anim-Wii/assets/1402795/c0cb9eb2-6bb3-4538-b811-0c392e8289ba)
+- **Texture projection on the cubes**: I tried best as I could to replicate the environment texture projection on the small rolling cube and on the big translucent cube. However, comparing them with the original we see many differences. To achieve the texture projection, I followed [this example from the GRRLib github repo](https://github.com/GRRLIB/GRRLIB/tree/master/examples/NEED_GRRLIB_FUNCTION). You are welcome to try and tweak the values to better match the original. Beware as in GC-anim-Wii the texture projection coordinates are stored for each frame of the rolling cube, in arrays with 191 indices.![color-comparison](https://github.com/supertazon/GC-anim-Wii/assets/1402795/90dc53e3-42e1-40b8-8250-f7f79de36578)
+
 - **Color of the cubes**: The environment texture provided by the IPL is grayscale and needs to be colored to get it to indigo. Looking at the picture above, you can see that the color is a bit different, it really shows on the smaller cube. I tried to tweak the TEV stages best as I could but could never manage to get the proper indigo color. I guess this improvement is related to the previous one.
 - **Better antialiasing**: I am simply using GRRLib's `GRRLIB_Settings.antialias = true;` command but the models are a bit jagged around their edges. I am not sure how I can improve this.
 - **Reverse engineering the J3Dbmd1 file format**: and load them on the fly, to not rely on external 3D models. I suspect that this RE work would solve the first two improvements.
