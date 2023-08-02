@@ -5,10 +5,15 @@ Attempt at a Gamecube intro animation recreation as a Wii native homebrew .dol u
 
 
 ## How to install
-- You need to have a softmodded Wii capable of launching homebrew. Follow this guide to softmod your Wii: https://wii.guide/. You need the Homebrew Channel installed and Priiloader if you want use use the .dol as a boot up animation.
-- Copy the GC-anim folder inside your "apps" folder on your SD card.
+### Prerequisites
+- You need to have a softmodded Wii capable of launching homebrew. Follow this guide to softmod your Wii: https://wii.guide/. You need the Homebrew Channel installed and Priiloader if you want to use the .dol as a boot up animation.
 - You need a Gamecube IPL file for the animation to play, otherwise it will exit the .dol and go back to the main menu. Here is a tutorial on how to dump the IPL file from a Gamecube: https://www.rwiihacks.com/tutorials/nintendont/#optional-dump-gamecube-bios-for-use-with-nintendont. If you already have an IPL file set up for Nintendont then you're good to go. Otherwise place your IPL file at the root of your SD card and rename it "ipl.bin" ("iplpal.bin", "iplusa.bin" and "ipljap.bin" -Nintendont's naming convention- also work).
-- Test the animation by launching it through the Homebrew Channel and making sure it works as intended. If you get a black screen or it exits straight away then you either don't have the IPL file at the root of the SD card, or it is a bad IPL dump (File size should be 2 MB).
+
+### How-to
+- Copy the GC-anim folder inside your "apps" folder on your SD card.
+- Test the animation by launching it through the Homebrew Channel and making sure it works as intended:
+  - If you get a black screen or it exits straight away then you either don't have the SD card inserted in your Wii, or the IPL file is not placed in the correct folder with the correct name.
+  - If you get gibberish textures and audio, you might have a bad IPL dump, try re-dumping it or getting it from a trusted source.
 - If you want to have it as a Wii start-up animation you can do so by changing these parameters on Priiloader:
   - Hold the RESET button while powering on the Wii to access Priiloader
   - Highlight "Load/Install File" and press A
@@ -18,11 +23,10 @@ Attempt at a Gamecube intro animation recreation as a Wii native homebrew .dol u
   - Highlight "Autoboot" and scroll right until it shows "Installed Filed"
   - Scroll down to "Save settings" and press A
   - Press B to go back to the main menu
-  - Scroll down to "System Menu Hacks" and press A
-  - Highlight "Auto-Press A at Health Screen" scroll right to mark it as "enabled"
-  - Scroll below to highlight "Replace Health Screen with Backmenu" scroll right to mark it as "enabled"
+  - Scroll down to highlight "Replace Health Screen with Backmenu" scroll right to mark it as "enabled"
   - Scroll down to highlight "save settings" and press A
-- Now everytime you boot up your Wii it should play the animation. If you remove the SD card it should skip the animation and boot straight to the Wii System Menu
+
+Now everytime you boot up your Wii it should play the animation. If you remove the SD card it should skip the animation and boot straight to the Wii System Menu
 
 ## Why?
 I have built a Wii portable, the [Famicom Gboy](https://bitbuilt.net/forums/index.php?threads/famicom-gboy.5514/), and it feels fantastic. The BitBuilt community has done an incredible job on the hardware and software side of things with a really integrated experience. However, I wasn't truly satisfied with RVLoader's splashscreen and wanted something that felt closer to the real experience.
@@ -74,7 +78,9 @@ For the audio part, I mainly referenced this very in-depth video made by SynaMax
 Feel free to fork this project and update it as you see fit, it is very unlikely that I will keep on working on this.
 
 ### Improvements on the basic animation
-- **Texture projection on the cubes**: I tried best as I could to replicate the environment texture projection on the small rolling cube and on the big translucent cube. However, comparing them with the original we see many differences. To achieve the texture projection, I followed [this example from the GRRLib github repo](https://github.com/GRRLIB/GRRLIB/tree/master/examples/NEED_GRRLIB_FUNCTION). You are welcome to try and tweak the values to better match the original. Beware as in GC-anim-Wii the texture projection coordinates are stored for each frame of the rolling cube, in arrays with 191 indices.![color-comparison](https://github.com/supertazon/GC-anim-Wii/assets/1402795/90dc53e3-42e1-40b8-8250-f7f79de36578)
+- **Texture projection on the cubes**: I tried best as I could to replicate the environment texture projection on the small rolling cube and on the big translucent cube. However, comparing them with the original we see many differences. To achieve the texture projection, I followed [this example from the GRRLib github repo](https://github.com/GRRLIB/GRRLIB/tree/master/examples/NEED_GRRLIB_FUNCTION). You are welcome to try and tweak the values to better match the original. Beware as in GC-anim-Wii the texture projection coordinates are stored for each frame of the rolling cube, in arrays with 191 indices.
+
+![color-comparison](https://github.com/supertazon/GC-anim-Wii/assets/1402795/90dc53e3-42e1-40b8-8250-f7f79de36578)
 
 - **Color of the cubes**: The environment texture provided by the IPL is grayscale and needs to be colored to get it to indigo. Looking at the picture above, you can see that the color is a bit different, it really shows on the smaller cube. I tried to tweak the TEV stages best as I could but could never manage to get the proper indigo color. I guess this improvement is related to the previous one.
 - **Better antialiasing**: I am simply using GRRLib's `GRRLIB_Settings.antialias = true;` command but the models are a bit jagged around their edges. I am not sure how I can improve this.
