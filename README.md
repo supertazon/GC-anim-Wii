@@ -96,7 +96,8 @@ Feel free to fork this project and update it as you see fit, it is very unlikely
 - [Owen](https://wiibrew.org/wiki/User:Owen): for helping me bootstrap the project and setting up devkitPro correctly, make sure you check out his awesome Wii homebrew games (still developing in 2023)!
 - [Trevor](https://github.com/trevor403): for cubeboot that inspired this project and general guidance regarding the IPL
 - [Aurelio](https://github.com/Aurelio92): for the immense help in Wii homebrew programming and IPL asset extraction
-- [Extrems' Discord server](https://discordapp.com/invite/JZsBV3Bn): for general Wii homebrew development and in particular Luig who has helped me get the texture projection going by fixing the 3D models
+- [DacoTaco](https://github.com/DacoTaco): for the help in troubleshooting (and fixing!) the return to system menu that didn't work if VIDEO wasn't initialized
+- [Extrems' Discord server](https://discordapp.com/invite/JZsBV3Bn): for general Wii homebrew development and in particular Luig who has helped me get the texture projection going by fixing the 3D models in Blender
 - Nintendo for the excellent games and hardware I've been playing for all these years.
 
 ## Resources
