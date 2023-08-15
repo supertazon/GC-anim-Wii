@@ -112,6 +112,7 @@ Feel free to fork this project and update it as you see fit, it is very unlikely
 - Spanish GX code examples with a nicely made PDF documentation: [Graficos 3D para Wii (PDF + Ejemplos)](https://www.elotrolado.net/hilo_wii-graficos-3d-para-wii-pdf-ejemplos_1049703)
 - French 3D model viewer tutorial using GRRLib: [Intro à la 3D sur Wii](https://web.archive.org/web/20130704023828/http://www.dev-fr.org/index.php/topic,4870.0.html)
 - Notes on setting up TEV stages: [from Amnoid's website](http://amnoid.de/gc/tev.html)
+- Gamecuben font for the GC-Anim HBC logo: [from Dafont by Bleutuna](https://www.dafont.com/gamecuben.font)
 
 ## About that Famicom Gboy intro animation
 I won't be releasing this version as it uses modified textures and not loaded on-the-fly assets. However, with a bit of tinkering of the source code you can easily get the same result:
