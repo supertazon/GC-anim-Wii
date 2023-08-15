@@ -92,7 +92,7 @@ Feel free to fork this project and update it as you see fit, it is very unlikely
 - **Controlling the camera with the stick**: to slightly move the camera while the animation plays depending on the stick coordinates. A bit like Smash Bros' character selection screen.
 
 ## Acknowledgements
-- [The BitBuilt community](https://bitbuilt.net/): for being awesome and pushing the boundaries of console portablizing
+- [The BitBuilt community](https://bitbuilt.net/): for being awesome and pushing the boundaries of console portablizing. This version of the animation is not yet compatible with RVLoader. For that, it needs to be re-written to not rely on GRRLIB anymore, I have to look into it but it won't be a simple job
 - [Owen](https://wiibrew.org/wiki/User:Owen): for helping me bootstrap the project and setting up devkitPro correctly, make sure you check out his awesome Wii homebrew games (still developing in 2023)!
 - [Trevor](https://github.com/trevor403): for cubeboot that inspired this project and general guidance regarding the IPL
 - [Aurelio](https://github.com/Aurelio92): for the immense help in Wii homebrew programming and IPL asset extraction
@@ -112,3 +112,9 @@ Feel free to fork this project and update it as you see fit, it is very unlikely
 - Spanish GX code examples with a nicely made PDF documentation: [Graficos 3D para Wii (PDF + Ejemplos)](https://www.elotrolado.net/hilo_wii-graficos-3d-para-wii-pdf-ejemplos_1049703)
 - French 3D model viewer tutorial using GRRLib: [Intro à la 3D sur Wii](https://web.archive.org/web/20130704023828/http://www.dev-fr.org/index.php/topic,4870.0.html)
 - Notes on setting up TEV stages: [from Amnoid's website](http://amnoid.de/gc/tev.html)
+
+## About that Famicom Gboy intro animation
+I won't be releasing this version as it uses modified textures and not loaded on-the-fly assets. However, with a bit of tinkering of the source code you can easily get the same result:
+
+https://github.com/supertazon/GC-anim-Wii/assets/1402795/c70116b1-2603-4a21-b32e-26b03aeb90ee
+
