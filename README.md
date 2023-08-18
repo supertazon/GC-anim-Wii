@@ -3,7 +3,6 @@ Attempt at a Gamecube intro animation recreation as a Wii native homebrew .dol u
 
 ![GC- bootscreen](https://github.com/supertazon/GC-anim-Wii/assets/1402795/bdafffc4-9655-401e-831c-f9a3c3e54372)
 
-
 ## How to install
 ### Prerequisites
 - You need to have a softmodded Wii capable of launching homebrew. Follow this guide to softmod your Wii: https://wii.guide/. You need the Homebrew Channel installed and Priiloader if you want to use the .dol as a boot up animation.
@@ -26,7 +25,10 @@ Attempt at a Gamecube intro animation recreation as a Wii native homebrew .dol u
   - Scroll down to highlight "Replace Health Screen with Backmenu" scroll right to mark it as "enabled"
   - Scroll down to highlight "save settings" and press A
 
-Now everytime you boot up your Wii it should play the animation. If you remove the SD card it should skip the animation and boot straight to the Wii System Menu
+Now everytime you boot up your Wii it should play the animation. If you remove the SD card it should skip the animation and boot straight to the Wii System Menu.
+
+## Added functionalities
+  - The camera can be moved around with the Gamecube controller's C-stick.
 
 ## Why?
 I have built a Wii portable, the [Famicom Gboy](https://bitbuilt.net/forums/index.php?threads/famicom-gboy.5514/), and it feels fantastic. The BitBuilt community has done an incredible job on the hardware and software side of things with a really integrated experience. However, I wasn't truly satisfied with RVLoader's splashscreen and wanted something that felt closer to the real experience.
