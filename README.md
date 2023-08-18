@@ -91,7 +91,6 @@ Feel free to fork this project and update it as you see fit, it is very unlikely
 ### Further improvements for customising the animation
 - **Color customization**: the environment texture is in grayscale thus easy to recolor, same goes for the tile texture. However the logo textures are already in indigo color. It would be nice to be able to recolor them to whatever we want to achieve full color customization, similar to [cubeboot](https://github.com/OffBroadway/flippyboot-ipl/tree/main/cubeboot).
 - **GAMECUBE logo customization**: adding the ability to load an external texture to replace the "GAMECUBEtm" text. Also already implemented into cubeboot. It would be awesome if it could be generated on-the-fly as well.
-- **Controlling the camera with the stick**: to slightly move the camera while the animation plays depending on the stick coordinates. A bit like Smash Bros' character selection screen.
 
 ## Acknowledgements
 - [The BitBuilt community](https://bitbuilt.net/): for being awesome and pushing the boundaries of console portablizing. This version of the animation is not yet compatible with RVLoader. For that, it needs to be re-written to not rely on GRRLIB anymore, I have to look into it but it won't be a simple job
