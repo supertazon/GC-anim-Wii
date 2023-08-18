@@ -7,6 +7,7 @@ bool go=true;		// Some video systems take a while to initialize (Wii2HDMI, GCVid
 //u8 initcnt=0;	// Initial frame counter Uncomment if you want to add a delay at the beginning of the animation
 
 // Camera
+f32 camX=200.0f;
 f32 camY=-200.0f;
 f32 lookX=0.0f;
 f32 lookY=1.0f;

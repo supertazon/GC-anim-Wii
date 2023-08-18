@@ -137,11 +137,14 @@ int main(int argc, char *argv[]) {
 			fspeed=30.0f*tv1;	// Final rotation speed when the cube moves up before falling
 
 			GRRLIB_SetBackgroundColour(0x00, 0x00, 0x00, 0xFF); // Black
+			PAD_Init();
 		}
 	}
 
-    while(allow) {		
-		GRRLIB_Camera3dSettings(200.0f,camY,200.0f, lookX, lookY, 0.0f, 0,ty,0);
+    while(allow) {
+		PAD_ScanPads();
+
+		GRRLIB_Camera3dSettings(camX+PAD_SubStickX(0),camY+PAD_SubStickY(0),camX-PAD_SubStickX(0), lookX, lookY, 0.0f, 0,ty,0);
 
 		if(cnt>=18){ // Block that handles NINTENDO display
 			// Reset 3D scene and projection parameters
