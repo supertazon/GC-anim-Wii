@@ -17,15 +17,23 @@ include $(DEVKITPPC)/wii_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
-SOURCES		:=	source source/gfx
-DATA		:=	data
-INCLUDES	:=
+SOURCES		:=	source source/nes
+DATA		:=
+INCLUDES	:=	source
 
 #---------------------------------------------------------------------------------
 # options for code generation
+# -ffp-contract=off: the IPL math uses separate fmuls/fadds (no fused madds)
 #---------------------------------------------------------------------------------
-
-CFLAGS	= -g -O2 -Wall $(MACHDEP) $(INCLUDE)
+# promo intro: size vs the promo clip (default 1.28) and IPL final layout (default 1);
+# make PROMO_SCALE=1 PROMO_IPL_LAYOUT=0 to compare it with the clip pixel for pixel
+ifneq ($(PROMO_SCALE),)
+SCALEDEF += -DPROMO_SCALE=$(PROMO_SCALE)
+endif
+ifneq ($(PROMO_IPL_LAYOUT),)
+SCALEDEF += -DPROMO_IPL_LAYOUT=$(PROMO_IPL_LAYOUT)
+endif
+CFLAGS	= -g -O2 -Wall -ffp-contract=off $(SCALEDEF) $(MACHDEP) $(INCLUDE)
 CXXFLAGS	=	$(CFLAGS)
 
 LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
@@ -33,13 +41,13 @@ LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=	-lgrrlib -lasnd -lfreetype -lbz2 -lpngu -lpng -ljpeg -lz -lfat -lwiiuse -lbte -logc -lm
+LIBS	:=	-lasnd -lfat -lwiiuse -lbte -logc -lm
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
 # include and lib
 #---------------------------------------------------------------------------------
-LIBDIRS	:= $(CURDIR)/$(GRRLIB) $(PORTLIBS)
+LIBDIRS	:= $(PORTLIBS)
 
 #---------------------------------------------------------------------------------
 # no real need to edit anything past this point unless you need to add additional
@@ -122,22 +130,6 @@ $(OUTPUT).dol: $(OUTPUT).elf
 $(OUTPUT).elf: $(OFILES)
 
 $(OFILES_SOURCES) : $(HFILES)
-
-#---------------------------------------------------------------------------------
-# This rule links in binary data with the .jpg extension
-#---------------------------------------------------------------------------------
-%.jpg.o	:	%.jpg
-#---------------------------------------------------------------------------------
-	@echo $(notdir $<)
-	$(bin2o)
-
-#---------------------------------------------------------------------------------
-# This rule links in binary data with the .png extension
-#---------------------------------------------------------------------------------
-%.png.o	:	%.png
-#---------------------------------------------------------------------------------
-	@echo $(notdir $<)
-	$(bin2o)
 
 -include $(DEPENDS)
 

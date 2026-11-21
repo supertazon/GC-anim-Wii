@@ -1,122 +1,189 @@
 # GC-anim-Wii
-Attempt at a Gamecube intro animation recreation as a Wii native homebrew .dol using Gamecube IPL assets on-the-fly (audio and textures, the 3D models are ripped).
 
-![GC- bootscreen](https://github.com/supertazon/GC-anim-Wii/assets/1402795/bdafffc4-9655-401e-831c-f9a3c3e54372)
+The GameCube boot animation, running natively on the Wii as a homebrew `.dol`, reproduced frame for frame from the GameCube IPL's own code and data.
 
-## How to install
-### Prerequisites
-- You need to have a softmodded Wii capable of launching homebrew. Follow this guide to softmod your Wii: https://wii.guide/. You need the Homebrew Channel installed and Priiloader if you want to use the .dol as a boot up animation.
-- You need a Gamecube IPL file for the animation to play, otherwise it will exit the .dol and go back to the main menu. Here is a tutorial on how to dump the IPL file from a Gamecube: https://www.rwiihacks.com/tutorials/nintendont/#optional-dump-gamecube-bios-for-use-with-nintendont. If you already have an IPL file set up for Nintendont then you're good to go. Otherwise place your IPL file at the root of your SD card and rename it "ipl.bin" ("iplpal.bin", "iplusa.bin" and "ipljap.bin" -Nintendont's naming convention- also work).
+It also has a second intro: the alternative GameCube intro seen in Nintendo's promotional videos, which never shipped on the console (see [The promo intro](#the-promo-intro)). `gc-anim.ini` picks which one plays.
 
-### How-to
-- Copy the GC-anim folder inside your "apps" folder on your SD card.
-- Test the animation by launching it through the Homebrew Channel and making sure it works as intended:
-  - If you get a black screen or it exits straight away then you either don't have the SD card inserted in your Wii, or the IPL file is not placed in the correct folder with the correct name.
-  - If you get gibberish textures and audio, you might have a bad IPL dump, try re-dumping it or getting it from a trusted source.
-- If you want to have it as a Wii start-up animation you can do so by changing these parameters on Priiloader:
-  - Hold the RESET button while powering on the Wii to access Priiloader
-  - Highlight "Load/Install File" and press A
-  - Scroll through the menu until you find "GC-anim" and press A, wait for the install to finish
-  - Press B to go back to the main menu
-  - Scroll down to "Settings" and press A
-  - Highlight "Autoboot" and scroll right until it shows "Installed Filed"
-  - Scroll down to "Save settings" and press A
-  - Press B to go back to the main menu
-  - Scroll down to highlight "Replace Health Screen with Backmenu" scroll right to mark it as "enabled"
-  - Scroll down to highlight "save settings" and press A
+Nothing from Nintendo is distributed. The models, textures, animations and the jingle are read at run time from **your own GameCube IPL dump** on SD or USB.
 
-Now everytime you boot up your Wii it should play the animation. If you remove the SD card it should skip the animation and boot straight to the Wii System Menu.
+## What's new (v2)
 
-## Added functionalities
-  - The camera can be moved around with the Gamecube controller's C-stick.
+- **No GRRLIB:** plain libogc/GX.
+- **No ripped models:** the original J3D models are loaded straight from the IPL and drawn with the same GX state as the IPL's own renderer. That fixes the colour and env-mapping problems of v1 for both cubes.
+- **Exact animation:** the animation logic was reverse-engineered from the IPL (BS2) and ported to C. It matches a Dolphin FIFO capture of the real boot sequence on every one of its 331 frames: cube path, camera shakes, tiles, logo, NINTENDO letters, GAMECUBE text and fade-out.
+- **Anti-aliasing like the original:** 3-sample AA with the two-pass top/bottom rendering the IPL uses.
+- **All IPL versions:** NTSC 1.0/1.1/1.2 and PAL 1.0/1.1/1.2 (the assets are located through the IPL's resource directory and identified by name).
+- **Video:**
+  - 60 Hz (NTSC, PAL60, MPAL; 480i and 480p): the 60 Hz timings.
+  - 50 Hz PAL: the PAL IPL's own 50 Hz timings (it has its own set) and its 520-line picture.
+  - 16:9: the scene is widened, not stretched.
+- **The alternate jingles:** hold **Z** on controller 1, or on all four controllers, while the console starts.
+- **The promo intro:** `intro = promo` plays the alternative intro of Nintendo's promo videos instead, rebuilt in real time from the IPL's own logo and letters.
+- **Random colours:** `color = random` draws a new colour scheme at each boot.
+- **Always back to the System Menu:** made to be installed in Priiloader as the Wii's boot animation.
+- **Super Mario Bros. 1-1 easter egg:** with your own `smb.nes` next to `boot.dol`, press **B** (or **1** on a Wii Remote held sideways) early in the animation and play World 1-1 on the big cube's face, then land back in the animation. See **[SMB.md](SMB.md)**.
 
-## Why?
-I have built a Wii portable, the [Famicom Gboy](https://bitbuilt.net/forums/index.php?threads/famicom-gboy.5514/), and it feels fantastic. The BitBuilt community has done an incredible job on the hardware and software side of things with a really integrated experience. However, I wasn't truly satisfied with RVLoader's splashscreen and wanted something that felt closer to the real experience.
+## Installation
 
-## How?
-I didn't want it to be a simple video that would be displayed at boot up but a real Wii homebrew program. The advantages of coding the animation are the freedom to customize it in the future and let the [memes begin](https://www.youtube.com/watch?v=lHE91NaDxLQ). I had learnt a bit of C about 10 years ago and thought it was a reasonable challenge to code a 6-second long animation in C for the Wii. I didn't expect this endeavour to take me 10 months! My approach has been really to replicate the animation frame-by-frame best as I could, for example here the tilting of the camera at the right angle when the small cube hits the big cube at the beginning of the animation:
-![anim-ref](https://github.com/supertazon/GC-anim-Wii/assets/1402795/b15bac59-4322-4d03-b91b-83321a763b2e)
-If you look at the source code you'll see that there are different frame and stage counters that track the models positions and update them on a frame-by-frame basis. I apologize for the quality of the source code, as I said this is my real first C project and everything is a bit of a mess with plenty of bad practices I'm sure. Here, have a couple of WIP GIFs to make up for it:
+1. You need a softmodded Wii with the Homebrew Channel (<https://wii.guide/>), and Priiloader if you want to use the animation as a boot animation.
+2. Download `GC-anim-Wii-v2.0.zip` from the [Releases](https://github.com/supertazon/GC-anim-Wii/releases) page and extract it to the root of the SD card (or USB drive). This creates `apps/gc-anim-wii/` with `boot.dol`, `meta.xml`, `icon.png` and a `gc-anim.ini` to edit. Everything goes in that folder: the program, your IPL dump, and the optional `gc-anim.ini`, logo image, `smb.nes` and `promo.wav`. Files anywhere else are not read, except the IPL dump, which may also be at the root of the card or drive. SD and USB work the same way: when both have a file, the SD card's copy is used. Keep all the files on the same device.
+3. Put your GameCube IPL dump there as `ipl.bin`. The names `iplusa.bin`, `iplpal.bin` and `ipljap.bin` (Nintendont's naming) also work. If it isn't in `apps/gc-anim-wii/`, it is also looked for at the root of the SD card, then of the USB drive. A USB drive that is still starting up at power-on is given up to 3 seconds when the IPL dump isn't found on the SD card. Scrambled (raw) and descrambled dumps are both accepted. How to dump the IPL: <https://www.rwiihacks.com/tutorials/nintendont/#optional-dump-gamecube-bios-for-use-with-nintendont>.
+4. Test it from the Homebrew Channel.
+5. Optional, to use it as the boot animation: in Priiloader, choose *Load/Install File* → gc-anim-wii, then *Settings* → *Autoboot: Installed File*. Also enable *Replace Health Screen with Backmenu* and save.
 
-![1](https://github.com/supertazon/GC-anim-Wii/assets/1402795/20c9860a-9964-4da2-885c-958dceabc8b6)
-![2](https://github.com/supertazon/GC-anim-Wii/assets/1402795/bab31285-2e87-42c9-818e-11f169b3d174)
-![3](https://github.com/supertazon/GC-anim-Wii/assets/1402795/f32635d1-5f33-490a-a2c4-4e6fecb941e6)
+Without an IPL dump the program exits immediately to the System Menu. Whatever happens (end of the animation, skip, reset), it always ends in the System Menu, even when launched from the Homebrew Channel.
 
-The animation uses libogc, asndlib, and GRRLib as the backbone with other functions detailed below.
+## Customisation (optional)
 
-<a href="https://wiibrew.org/wiki/GRRLIB"><img src="https://grrlib.github.io/GRRLIB/grrlib_logo.png" width="20%" height="20%"></a>
+Edit `gc-anim.ini` in `apps/gc-anim-wii/`, next to `boot.dol` (the release comes with one; without it, every setting keeps its default). The same folder is used when the program is installed in Priiloader.
 
-## Assets
-Textures and audio tracks are decoded on-the-fly from the Gamecube's IPL. This was made possible thanks to all the reverse engineering work previously made by the community, see further below for the list of resources used in this project.
+```ini
+[general]
+intro = ipl          ; ipl (the IPL's boot animation) or promo (the promo videos' intro)
+skip = 0             ; 1 = A or Start skips the animation
+camera = 1           ; C-stick (GameCube controller 1) orbits the camera
+force_4_3 = 0        ; ignore the console's 16:9 setting
+volume = 199         ; jingle volume 0-255 (199 = the IPL's own level)
+delay = 0            ; ms of black screen before the animation (0-10000), for slow HDMI screens/mods
 
-The IPL is first descrambled, depending on its region it then contains either 14 Yay0 files (NTSC IPL) or 31 Yay0 files (PAL IPL). Some of these Yay0 files contain J3D files (magic J3D1bmd1) which are 3D models produced by Nintendo's [JSYSTEM toolkit](https://wiki.cloudmodding.com/tww/JSYSTEM). Unfortunately these types of early Gamecube models have not been completely reverse engineered. These J3D files contain [all the data to display the 3D models](https://wiki.cloudmodding.com/tww/BMD_and_BDL), including textures which are in [BTI format](https://wiki.cloudmodding.com/tww/BTI). Among the 14 Yay0 files, 9 of them are J3D files covering the different assets used by the IPL (both for the intro animation and the following Gamecube menu). Using [wimgt.exe](https://szs.wiimm.de/wimgt/), I was able to convert the associated BTI texture files to PNG files and identify the textures I needed for this project:
-- The environment texture (which is found in 7 of the 9 J3D model files) for the small cube, bigger cube and NINTENDO letters
-- The texture for the tiles
-- The three textures for the final logo
-- The GAMECUBE written logo
+[colors]
+color = 255,60,60    ; theme colour: maps the cube's indigo onto this colour
 
-The J3D files containing these textures are always stored in that order no matter the region of the IPL. Knowing exactly the header of each Yay0 file, I could implement a function to correctly find and extract each texture from the descrambled IPL. [Aurelio](https://github.com/Aurelio92/) helped me by providing me with a mini BTI library that made working with BTI files a breeze.
+[text]
+letters = WIIBREW              ; replaces the 3D "NINTENDO" letters
+letters_spacing = natural      ; natural or fill
+image = logo.png               ; replaces the "GAMECUBE" logotype (file in apps/gc-anim-wii/)
+```
 
-Unfortunately the 3D model part of the J3D files (with magic J3D1bmd1) has not been reverse engineered and I had to settle with using ripped 3D models. I used [NinjaRipper](https://ninjaripper.com/) in combination with Dolphin to get the 3D models for both cubes, the NINTENDO letters, and the tiles.
+- **Letters:** up to 16 capital letters A–Z and spaces; lower case is converted.
+  - N, I, T, E, D and O are the IPL's own letters. The other 20 are an original block alphabet drawn in the same style (`tools/letters_design.py`).
+  - Each letter flips up with the motion of the original letter nearest its position.
+  - `natural` keeps NINTENDO's letter pitch for words of up to 8 letters, centred; longer words are squeezed to NINTENDO's width.
+  - `fill` spreads every word over NINTENDO's width.
 
-For the audio part, I mainly referenced this very in-depth video made by SynaMax: [Extracting sounds from the GameCube Main Menu!](https://www.youtube.com/watch?v=FEbcyf8cis4). The audio for the intro animation consists of two tracks: the left and right channel. The audio files are stored as a combination of [WSYS and AW files](https://wiki.cloudmodding.com/tww/AAF#WSYS). The WSYS file contains all the needed information to decode the raw audio AW file (which is ADPCM). Luckily, as mentioned in SynaMax's video, a decoding algorithm was already available and I implemented it into this project: [wsyster](https://github.com/hcs64/vgm_ripping/blob/master/soundbank/wsyster/wsyster.c).
+- **Logotype:** PNG, BMP, JPG or TGA, drawn white on a transparent or black background. A 352×40 image (e.g. from <https://trevor.cafe/logo/>) is used pixel for pixel. Any other size has its empty borders cropped, then is fitted and centred, keeping its aspect ratio. Give just the file name and put the image in `apps/gc-anim-wii/`; a full path such as `usb:/logos/mine.png` also works. A `logo.png` in that folder is used even without the setting.
 
-## Source files overview
-- `afcdecoder.c`: contains a modified implementation of wsyster.c
-- `bti.c`: contains Aurelio's mini BTI library
-- `cubes.c`: contains all the functions to display and animate the small rolling cube and the big translucent cube
-- `descrambler.c`: contains the code to descramble the IPL
-- `globals.c`: contains some global variables and a function to initialize graphics
-- `logos.c`: contains all the functions to display and animate the main logo, the GAMECUBE text logo and the NINTENDO letters logo
-- `main.c`: main
-- `models.c`: stores the 3D models in arrays that are just OBJ files exported with Blender, also stores the coordinates for the texture projection on the small rolling cube
-- `tiles.c`: contains all the functions to display and animate the tiles
-- `yay0dec.c`: contains a function that finds the offsets of the needed Yay0 archives and of the AW audio files, and a function to decode Yay0 archives
+`camera`, the alternate jingles (Z) and the SMB easter egg are for `intro = ipl` only. The `delay` is counted in frames at the console's real refresh rate (50 Hz, or 59.94 Hz for NTSC, PAL60 and 480p), the same in both intros.
 
-## Head-to-head comparison
-[Gamecube intro animation comparison](https://www.youtube.com/watch?v=O4ZZEfldFb8): as you can see it's very close to the original but not 100% the same.
+### Colours
 
-## Improvements that could be made but that I couldn't implement
-Feel free to fork this project and update it as you see fit, it is very unlikely that I will keep on working on this.
+Every key is optional. Colours are `R,G,B` or `#RRGGBB`. Each one is applied with the model's own shading, so it keeps the original lighting and shine.
 
-### Improvements on the basic animation
-- **Texture projection on the cubes**: I tried best as I could to replicate the environment texture projection on the small rolling cube and on the big translucent cube. However, comparing them with the original we see many differences. To achieve the texture projection, I followed [this example from the GRRLib github repo](https://github.com/GRRLIB/GRRLIB/tree/master/examples/NEED_GRRLIB_FUNCTION). You are welcome to try and tweak the values to better match the original. Beware as in GC-anim-Wii the texture projection coordinates are stored for each frame of the rolling cube, in arrays with 191 indices.
+| key | what it colours | default |
+|---|---|---|
+| `color` | everything below, unless set separately; `random`: see below | the original indigo |
+| `cube` | the small rolling cube; `tiles` = takes the colour of the tile appearing under it | `color` |
+| `tiles` | the tiles' final colours: one colour, a list of up to 16, or `rainbow` | `color` |
+| `tiles_mode` | with a list: `cycle` (A B C A B C…) or `spread` (bands along the path) | `cycle` |
+| `trail` | new tiles start in the cube's colour and reach their own over this many tiles (0 = at once) | 0 |
+| `logo` | the final 3D logo | the colour that follows the last tile |
+| `drop` | colour the cube turns into on its final drop | `logo` |
+| `drop_blend` | when: `fall` (the drop only), `jump` (rise and drop) or `off` | `fall` |
+| `glass` | the glass cube flashing on the impacts | `logo` |
+| `glass_opacity` | strength of those flashes, in % (0 = hidden) | 100 |
+| `background` | the background, and the colour of the final fade | black |
+| `text` | "NINTENDO" and "GAMECUBE" | white, or black on a light background |
+| `hue`, `saturation`, `brightness` | global adjustment on top of all the above (degrees, %, %) | 0, 100, 100 |
 
-![color-comparison](https://github.com/supertazon/GC-anim-Wii/assets/1402795/90dc53e3-42e1-40b8-8250-f7f79de36578)
+The cube lays 16 tiles. With a shorter list, `cycle` repeats it and `spread` stretches it along the path. By the time the cube lands, all tiles have reached their final colour.
 
-- **Color of the cubes**: The environment texture provided by the IPL is grayscale and needs to be colored to get it to indigo. Looking at the picture above, you can see that the color is a bit different, it really shows on the smaller cube. I tried to tweak the TEV stages best as I could but could never manage to get the proper indigo color. I guess this improvement is related to the previous one.
-- **Better antialiasing**: I am simply using GRRLib's `GRRLIB_Settings.antialias = true;` command but the models are a bit jagged around their edges. I am not sure how I can improve this.
-- **Reverse engineering the J3Dbmd1 file format**: and load them on the fly, to not rely on external 3D models. I suspect that this RE work would solve the first two improvements.
+**`color = random`:** a new colour scheme at each boot. It replaces `color`, `cube`, `tiles`, `tiles_mode` and `trail`; the other keys (`logo`, `glass`, `background`, `text`, `hue`…) still apply if set. The schemes, with how often they come up:
+- one colour (25%), sometimes with a small cube in a contrasting colour;
+- a gradient between two colours (30%), in 4 to 16 bands along the path;
+- part or all of the colour wheel from a random starting hue (15%);
+- a repeating motif of 2 to 6 tiles in 2 or 3 matching colours (30%).
 
-### Further improvements for customising the animation
-- **Color customization**: the environment texture is in grayscale thus easy to recolor, same goes for the tile texture. However the logo textures are already in indigo color. It would be nice to be able to recolor them to whatever we want to achieve full color customization, similar to [cubeboot](https://github.com/OffBroadway/flippyboot-ipl/tree/main/cubeboot).
-- **GAMECUBE logo customization**: adding the ability to load an external texture to replace the "GAMECUBEtm" text. Also already implemented into cubeboot. It would be awesome if it could be generated on-the-fly as well.
+With tiles, the small cube either keeps the theme colour or takes each tile's colour, and a trail of 1 to 4 tiles is sometimes added. Colours are always vivid: never grey and never dark. In the promo intro, `random` gives a random theme colour.
+
+Examples:
+
+```ini
+; Famicom: gold cube, red trail, red logo
+[colors]
+cube  = 212,175,55
+tiles = 113,21,33
+trail = 4
+
+; rainbow
+[colors]
+tiles = rainbow
+cube  = tiles
+
+; French flag
+[colors]
+tiles = 0,85,164  255,255,255  239,65,53
+cube  = tiles
+
+; black console
+[colors]
+color      = 40,40,45
+background = 255,255,255
+```
+
+A very dark grey such as `40,40,45` keeps the 3D look; pure black flattens the models into silhouettes.
+
+## The promo intro
+
+`intro = promo` plays the alternative GameCube intro seen in Nintendo's promotional videos: light streaks draw the cube, a glass cube "slams" into the solid logo, then the picture fades.
+- **Logo, NINTENDO letters and GAMECUBE logotype:** read at run time from your IPL dump (`boot_demo_logo_mark` and `boot_demo_mat28` models), drawn as an isometric view in the promo's colours.
+- **Sound:** `promo.wav` in `apps/gc-anim-wii/`, the audio of the promo clip (PCM 16-bit, mono or stereo, any rate). It isn't in the IPL. Without it the intro plays silently.
+- **Timings, colours, streak paths and slam layers:** measured on the reference clip and stored in `source/anim_data.h` (generated by `tools/anim.py`). Nothing from Nintendo is in the source or the `.dol`.
+- **Size and layout:** drawn 1.28× the clip's size, with its final layout matching the IPL's last frame (logo, NINTENDO and GAMECUBE each mapped onto their box in that frame).
+
+Settings used by the promo intro:
+
+| key | effect |
+|---|---|
+| `[general]` `skip`, `force_4_3`, `volume`, `delay` | as for the IPL intro (`volume = 199` is the promo's full level) |
+| `color` | the logo and the light (streaks, glow, glass cube, slam) |
+| `logo` | the final logo: the IPL's face textures recoloured exactly as in the IPL intro. Without `logo` or `color`, the promo's pale lavender |
+| `glass` | the light only: it takes this colour's hue and saturation and keeps its own brightness |
+| `hue`, `saturation`, `brightness`, `glass_opacity` | as for the IPL intro |
+| `background` | background and final fade (it lightens the picture: "screen" blend, so the text can't be darker than it) |
+| `text` | final NINTENDO / GAMECUBE colour (NINTENDO a bit darker, as in the promo) |
+| `[text]` `letters`, `letters_spacing` | the custom letters replace NINTENDO, with the same spacing rules and alphabet as the IPL intro, drawn flat in the promo's style |
+| `[text]` `image` (or `logo.png`) | the custom logotype replaces GAMECUBE, placed as in the IPL intro |
+
+`cube`, `tiles`, `tiles_mode`, `trail`, `drop`, `drop_blend`, `camera`, the Z jingles and the SMB easter egg do nothing in the promo intro.
+
+## Building
+
+Requires devkitPro (devkitPPC, libogc, libfat).
+
+```sh
+make
+```
+
+This builds `GC-anim-Wii.dol` (named after the project folder); copy it to `apps/gc-anim-wii/` as `boot.dol`.
+
+## How it works
+
+| file | role |
+|---|---|
+| `source/ipl.c` | loads and descrambles the dump, finds the resource directory, extracts the assets by name |
+| `source/j3d.c` | the IPL's model renderer: INF1 traversal, MAT1 materials → GX, shapes drawn from their display lists, env-map texture matrices, the "model alpha" TEV stage |
+| `source/anim.c` | joint animation (`J3D1bck1`) and material colour animation (`IPK1`) of the NINTENDO/GAMECUBE model |
+| `source/intro.c` | the animation logic: drop, roll path, final jump, impact shakes, tiles, alphas, fade. Each function names the IPL routine it reproduces |
+| `source/gcmath.c` | the IPL's 4096-entry sine table, Euler matrices and hermite interpolation, in the same float operation order |
+| `source/scene.c` | the draw order, tiles, light and fade quad |
+| `source/video.c` | render mode (592×448 or 592×520, VI-scaled to 640), AA two-pass copy, 16:9 |
+| `source/ipl_audio.c` | locates and decodes the AFC jingle (WSYS/IBNK/sequence) |
+| `source/recolor.c`, `source/textimg.c`, `source/config.c` | customisation |
+| `source/letters_data.c` | the custom alphabet's meshes (generated) |
+| `source/promo.c`, `source/anim_data.h` | the promo intro: logo layers, light streaks, slam, glow; its timeline (generated by `tools/anim.py`) |
+| `source/smb*.c`, `source/nes/`, `source/ipl_bank.c` | the Super Mario Bros. 1-1 easter egg (details in [SMB.md](SMB.md)) |
+
+`tools/` holds the generators of the two generated source files (Python 3):
+- `letters_design.py` defines the custom alphabet; `make_letters.py` (needs shapely ≥ 2.1) extrudes it into `source/letters_data.c`;
+- `anim.py` is the promo intro's timeline (timings, colours, streak paths, slam layers); `python3 tools/anim.py source/anim_data.h` regenerates the header.
 
 ## Acknowledgements
-- [The BitBuilt community](https://bitbuilt.net/): for being awesome and pushing the boundaries of console portablizing. This version of the animation is not yet compatible with RVLoader. For that, it needs to be re-written to not rely on GRRLIB anymore, I have to look into it but it won't be a simple job
-- [Owen](https://wiibrew.org/wiki/User:Owen): for helping me bootstrap the project and setting up devkitPro correctly, make sure you check out his awesome Wii homebrew games (still developing in 2023)!
-- [Trevor](https://github.com/trevor403): for cubeboot that inspired this project and general guidance regarding the IPL
-- [Aurelio](https://github.com/Aurelio92): for the immense help in Wii homebrew programming and IPL asset extraction
-- [DacoTaco](https://github.com/DacoTaco): for the help in troubleshooting (and fixing!) the return to system menu that didn't work if VIDEO wasn't initialized
-- [Extrems' Discord server](https://discordapp.com/invite/JZsBV3Bn): for general Wii homebrew development and in particular Luig who has helped me get the texture projection going by fixing the 3D models in Blender
-- Nintendo for the excellent games and hardware I've been playing for all these years.
 
-## Resources
-- IPL descrambler: [taken from flippyboot-IPL](https://github.com/OffBroadway/ipl-decoder/blob/main/ext/descrambler.c)
-- Yay0 file decompression: [adapted from ethteck's python script](https://github.com/ethteck/n64decompress/blob/main/Yay0/decompress.py)
-- Audio AFC decoder: [adapted from hcs64's wsyster.c](https://github.com/hcs64/vgm_ripping/blob/master/soundbank/wsyster/wsyster.c)
-- SynaMax's video on Gamecube IPL audio extraction: [Extracting sounds from the GameCube Main Menu](https://www.youtube.com/watch?v=FEbcyf8cis4)
-- BTI file format: [Cloudmodding](https://wiki.cloudmodding.com/tww/BTI)
-- [GRRLib](https://wiibrew.org/wiki/GRRLIB)
-- Tutorial to start Wii homebrew programming from scratch: [Wii Homebrew App Creation Tutorial #1 (Setup and Hello World)](https://www.youtube.com/watch?v=noxGGdxHbDY)
-- Spanish GRRLib tutorial with 11 lessons: [Tutoriales de programación de GRRLIB](https://wii.scenebeta.com/tutorial/tutoriales-de-programacion-de-grrlib)
-- Spanish GX code examples with a nicely made PDF documentation: [Graficos 3D para Wii (PDF + Ejemplos)](https://www.elotrolado.net/hilo_wii-graficos-3d-para-wii-pdf-ejemplos_1049703)
-- French 3D model viewer tutorial using GRRLib: [Intro à la 3D sur Wii](https://web.archive.org/web/20130704023828/http://www.dev-fr.org/index.php/topic,4870.0.html)
-- Notes on setting up TEV stages: [from Amnoid's website](http://amnoid.de/gc/tev.html)
-- Gamecuben font for the GC-Anim HBC logo: [from Dafont by Bleutuna](https://www.dafont.com/gamecuben.font)
-
-## About that Famicom Gboy intro animation
-I won't be releasing this version as it uses modified textures and not loaded on-the-fly assets. However, with a bit of tinkering of the source code you can easily get the same result:
-
-https://github.com/supertazon/GC-anim-Wii/assets/1402795/c70116b1-2603-4a21-b32e-26b03aeb90ee
-
+- [The BitBuilt community](https://bitbuilt.net/)
+- [Aurelio](https://github.com/Aurelio92/) for the help with Wii homebrew and IPL asset extraction (v1)
+- [Trevor](https://github.com/trevor403) for cubeboot, which inspired this project
+- [DacoTaco](https://github.com/DacoTaco) for the return-to-menu fix
+- Owen, Luig and Extrems' Discord server (v1)
+- IPL descrambler by Segher Boessenkool (via flippyboot's ipl-decoder)
+- [stb_image](https://github.com/nothings/stb) (public domain) for the custom logotype
+- Nintendo, for the hardware and games
