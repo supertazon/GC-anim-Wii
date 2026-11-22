@@ -1,5 +1,7 @@
 # GC-anim-Wii
 
+![GC- bootscreen](https://github.com/supertazon/GC-anim-Wii/assets/1402795/bdafffc4-9655-401e-831c-f9a3c3e54372)
+
 The GameCube boot animation, running natively on the Wii as a homebrew `.dol`, reproduced frame for frame from the GameCube IPL's own code and data.
 
 It also has a second intro: the alternative GameCube intro seen in Nintendo's promotional videos, which never shipped on the console (see [The promo intro](#the-promo-intro)). `gc-anim.ini` picks which one plays.
