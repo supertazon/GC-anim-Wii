@@ -38,6 +38,13 @@ Without an IPL dump the program exits immediately to the System Menu. Whatever h
 
 ## Customization (optional)
 
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/gc-anim-wii-studio-logo-dark-bg.png">
+    <img alt="GC-anim-Wii Studio" src="assets/gc-anim-wii-studio-logo-light-bg.png" width="420">
+  </picture>
+</p>
+
 The easiest way: **[GC-anim-Wii Studio](https://supertazon.github.io/gc-anim-wii-studio/)** previews the settings in your browser, designs the logotype, and writes `gc-anim.ini` for you. Put the file in `apps/gc-anim-wii/`, next to `boot.dol` (the release comes with one; without it, every setting keeps its default).
 
 The main keys:
