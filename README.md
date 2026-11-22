@@ -1,6 +1,8 @@
 # GC-anim-Wii
 
-![GC- bootscreen](https://github.com/supertazon/GC-anim-Wii/assets/1402795/bdafffc4-9655-401e-831c-f9a3c3e54372)
+<p align="center">
+  <img src="https://github.com/supertazon/GC-anim-Wii/assets/1402795/bdafffc4-9655-401e-831c-f9a3c3e54372" alt="GC-anim-Wii boot screen">
+</p>
 
 The GameCube boot animation, running natively on the Wii as a homebrew `.dol`, reproduced frame for frame from the GameCube IPL's own code and data.
 
