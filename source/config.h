@@ -42,6 +42,8 @@ typedef struct {
 	int glass_opacity;     /* percent                                                          */
 	int have_background;
 	u8  background[3];     /* also the colour of the final fade                                 */
+	int have_promo_background;
+	u8  promo_background[3]; /* the promo intro's background, if not background's              */
 	int have_text;
 	u8  text[3];           /* NINTENDO / GAMECUBE colour                                        */
 	char letters[17];      /* custom 3D text replacing NINTENDO (A-Z and spaces, max 16)       */

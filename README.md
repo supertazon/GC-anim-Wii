@@ -92,7 +92,7 @@ Every key is optional. Colors are `R,G,B` or `#RRGGBB`. Each one is applied with
 | `drop_blend` | when: `fall` (the drop only), `jump` (rise and drop) or `off` | `fall` |
 | `glass` | the glass cube flashing on the impacts | `logo` |
 | `glass_opacity` | strength of those flashes, in % (0 = hidden) | 100 |
-| `background` | the background, and the color of the final fade | black |
+| `background` | the background, and the color of the final fade (`promo_background`: the promo intro's own, see below) | black |
 | `text` | "NINTENDO" and "GAMECUBE" | white, or black on a light background |
 | `hue`, `saturation`, `brightness` | global adjustment on top of all the above (degrees, %, %) | 0, 100, 100 |
 
@@ -142,10 +142,11 @@ Settings used by the promo intro:
 | `[general]` `skip`, `force_4_3`, `volume`, `delay` | as for the IPL intro (`volume = 199` is the promo's full level) |
 | `color` | the logo and the light (streaks, glow, glass cube, slam) |
 | `logo` | the final logo: the IPL's face textures recolored exactly as in the IPL intro. Without `logo` or `color`, the promo's pale lavender |
-| `glass` | the light only: it takes this color's hue and saturation and keeps its own brightness |
+| `glass` | the light only: it takes this color's hue and saturation and keeps its own brightness. Without `glass`, the light follows `logo`, then `color` |
 | `hue`, `saturation`, `brightness`, `glass_opacity` | as for the IPL intro |
-| `background` | background and final fade (it lightens the picture: "screen" blend, so the text can't be darker than it) |
-| `text` | final NINTENDO / GAMECUBE color (NINTENDO a bit darker, as in the promo) |
+| `background` | background and final fade. On a light background (the same rule as the IPL intro's black text), the light is drawn as ink: the theme color, darkened |
+| `promo_background` | the promo's own background, when the IPL intro's doesn't suit it (default: `background`) |
+| `text` | final NINTENDO / GAMECUBE color (NINTENDO a bit darker, as in the promo); default white, or black on a light background |
 | `[text]` `letters`, `letters_spacing` | the custom letters replace NINTENDO, with the same spacing rules and alphabet as the IPL intro, drawn flat in the promo's style |
 | `[text]` `image` (or `logo.png`) | the custom logotype replaces GAMECUBE, placed as in the IPL intro |
 

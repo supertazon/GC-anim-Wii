@@ -63,16 +63,23 @@ static Mtx el_mtx[3];          /* clip pixels -> clip pixels, before the scene p
      color          theme colour: the logo and the light
      logo           final logo (what the IPL cube's indigo 95,80,190 becomes, as in GC-anim-Wii)
      glass          the light: streaks, glow, glass cube, slam (its hue and saturation;
-                    the light keeps its brightness)
+                    the light keeps its brightness); default: logo, else color
      hue/saturation/brightness   applied to both
      glass_opacity  glass cube
-     background     background and final fade
+     background     background and final fade (promo_background: the promo's own);
+                    on a light one the light is drawn as ink
      text           final NINTENDO / GAMECUBE colour */
 #define NKEY 12
 static float look_glass[2][3], look_cyan[2][3], look_final[2][3], shell[3][3];
 static float col_line[3] = {0.45f, 0.75f, 1.0f}, col_trail[3] = {0.75f, 0.9f, 1.0f};
 static float col_core[3] = {1, 1, 1}, col_halo[3] = {0.45f, 0.75f, 1.0f}, col_edge[3] = {0.75f, 0.87f, 0.96f};
 static float bloom_tint[3], bg[3], glass_opacity = 1;
+/* background compositing: each picture is drawn twice, in colour and as a coverage mask (how much
+   of the pixel is covered: 1 for the solid logo, the light's intensity for the light);
+   out = colour + background * (1 - mask).  On a light background (luma > 128, the IPL intro's rule
+   for black text) the light turns into ink: its colours darkened to the theme's brightness (ink_v) */
+static int bg_mode, mask_mode;
+static float ink_v = 1, mask_div = 1, txt_gc[3], txt_nin[3];
 static AKey3 gc_rgb[NKEY], nin_rgb[NKEY];
 static int n_gc, n_nin;
 
@@ -115,6 +122,8 @@ static u8 *custom_gc;        /* custom GAMECUBE logotype (I8, the IPL texture's 
 /* render targets */
 static u8 *buf_layer[2], *buf_scene, *buf_t1, *buf_b1, *buf_q, *buf_t2, *buf_b2;
 static GXTexObj tex_layer[2], tex_scene, tex_t1, tex_b1, tex_q, tex_t2, tex_b2;
+static u8 *buf_mlayer[2], *buf_mask;                /* coverage masks (with a background) */
+static GXTexObj tex_mlayer[2], tex_mask;
 
 /* procedural sprites */
 static u8 *buf_gauss, *buf_line, *buf_trail;
@@ -389,8 +398,10 @@ static void setup_colors(const Config *cfg)
 	if (cfg->have_logo) tf = cfg->logo;
 	else if (cfg->have_color) tf = cfg->color;
 	recolor_setup_target(&rf, tf, cfg);
-	/* the light: hue and saturation of the target, brightness kept */
+	/* the light: hue and saturation of the target, brightness kept (glass, else logo, else color,
+	   as the IPL intro's glass cube) */
 	if (cfg->have_glass) tl = cfg->glass;
+	else if (cfg->have_logo) tl = cfg->logo;
 	else if (cfg->have_color) tl = cfg->color;
 	rl.dh = (float)cfg->hue;
 	rl.ks = cfg->saturation / 100.0f;
@@ -434,9 +445,32 @@ static void setup_colors(const Config *cfg)
 	}
 	glass_opacity = cfg->glass_opacity / 100.0f;
 
-	/* background: lightens everything ("screen" blend), so the text can't be darker than it */
-	if (cfg->have_background)
-		for (c = 0; c < 3; c++) bg[c] = cfg->background[c] / 255.0f;
+	/* background: promo_background, else background */
+	{
+		const u8 *b = cfg->have_promo_background ? cfg->promo_background : cfg->have_background ? cfg->background : NULL;
+		int luma;
+		if (b)
+			for (c = 0; c < 3; c++) bg[c] = b[c] / 255.0f;
+		bg_mode = bg[0] + bg[1] + bg[2] > 0;
+		luma = (299 * c8(bg[0]) + 587 * c8(bg[1]) + 114 * c8(bg[2])) / 1000;
+		ink_v = 1;
+		if (bg_mode && luma > 128) {
+			ink_v = tl ? (tl[0] > tl[1] ? (tl[0] > tl[2] ? tl[0] : tl[2]) : (tl[1] > tl[2] ? tl[1] : tl[2])) / 255.0f : 0.35f;
+			if (ink_v > 0.55f) ink_v = 0.55f;
+			for (c = 0; c < 3; c++) {
+				for (i = 0; i < 2; i++) { look_cyan[i][c] *= ink_v; look_glass[i][c] *= ink_v; }
+				for (i = 0; i < 3; i++) shell[i][c] *= ink_v;
+				col_line[c] *= ink_v; col_trail[c] *= ink_v; col_core[c] *= ink_v;
+				col_halo[c] *= ink_v; col_edge[c] *= ink_v; bloom_tint[c] *= ink_v;
+			}
+		}
+		for (c = 0; c < 3; c++) {
+			txt_gc[c] = cfg->have_text ? cfg->text[c] / 255.0f : luma > 128 ? 0 : 1;
+			txt_nin[c] = bg[c] + (txt_gc[c] - bg[c]) * 0.7f;
+		}
+		if (bg_mode)
+			return;
+	}
 	custom_text = cfg->have_text || cfg->have_background;
 	if (cfg->have_text)
 		for (c = 0; c < 3; c++) txt[c] = cfg->text[c] / 255.0f;
@@ -653,6 +687,9 @@ int promo_init(IplAssets *a, Video *v, const Config *cfg)
 	guOrtho(proj_pix, 0, FH, 0, FW, 50.0f, 10000.0f);
 	guMtxIdentity(ident);
 	setup_colors(cfg);
+	if (bg_mode && (make_target(&buf_mlayer[0], &tex_mlayer[0], FW, FH) ||
+	                make_target(&buf_mlayer[1], &tex_mlayer[1], FW, FH) || make_target(&buf_mask, &tex_mask, FW, FH)))
+		return -6;
 	/* the scene projection maps clip x to 320 + (x - 320) * SCALE_X (same for y around 240):
 	   build per element the clip-space transform that lands its box on the IPL box */
 	for (i = 0; i < 3; i++) {
@@ -672,6 +709,8 @@ void promo_free(void)
 	int i;
 	for (i = 0; i < 3; i++) { free(lum_buf[i]); free(fin_buf[i]); fin_buf[i] = NULL; }
 	free(buf_layer[0]); free(buf_layer[1]); free(buf_scene); free(scratch);
+	free(buf_mlayer[0]); free(buf_mlayer[1]); free(buf_mask);
+	buf_mlayer[0] = buf_mlayer[1] = buf_mask = NULL;
 	free(buf_t1); free(buf_b1); free(buf_q); free(buf_t2); free(buf_b2);
 	free(buf_gauss); free(buf_line); free(buf_trail);
 	j3d_free(&logo);
@@ -705,6 +744,12 @@ static void blend_none(void) { GX_SetBlendMode(GX_BM_NONE, GX_BL_ONE, GX_BL_ZERO
 /* one stage: out = tex * K0 * 2^scale  (or K0 alone if tex == NULL) */
 static void tev_modulate(GXTexObj *tex, GXColor k, int scale)
 {
+	if (mask_mode) {
+		/* mask pass: every colour turns grey, its intensity (undoing the ink) */
+		u8 m = k.r > k.g ? (k.r > k.b ? k.r : k.b) : (k.g > k.b ? k.g : k.b);
+		float g = clampf(m / 255.0f / mask_div, 0, 1);
+		k = rgb(g, g, g, 1);
+	}
 	GX_SetNumTevStages(1);
 	GX_SetTevKColor(GX_KCOLOR0, k);
 	GX_SetTevKColorSel(GX_TEVSTAGE0, GX_TEV_KCSEL_K0);
@@ -920,10 +965,33 @@ static void look_ab(int look, float t, float A[3], float B[3])
 	}
 }
 
+/* text colour: the promo's own ramp; on a background, the text colour faded in by that ramp
+   (in the mask pass, the ramp's intensity) */
+#define N_DEF_GC  ((int)(sizeof(a_gamecube_rgb) / sizeof(a_gamecube_rgb[0])))
+#define N_DEF_NIN ((int)(sizeof(a_nintendo_rgb) / sizeof(a_nintendo_rgb[0])))
+static void text_col(const AKey3 *keys, int n, const AKey3 *def, int ndef, const float txt[3], float tt, float out[3])
+{
+	float d[3], m, f;
+	int c;
+	if (!bg_mode && !mask_mode) {
+		ramp3(keys, n, tt, out);
+		return;
+	}
+	ramp3(def, ndef, tt, d);
+	f = def[ndef - 1].v[0];
+	if (def[ndef - 1].v[1] > f) f = def[ndef - 1].v[1];
+	if (def[ndef - 1].v[2] > f) f = def[ndef - 1].v[2];
+	m = d[0] > d[1] ? d[0] : d[1];
+	if (d[2] > m) m = d[2];
+	m = clampf(m / f, 0, 1);
+	for (c = 0; c < 3; c++)
+		out[c] = mask_mode ? m * mask_div : txt[c] * m;   /* (tev_modulate divides the mask back) */
+}
+
 static void draw_layer(int look, float t)
 {
 	Mtx M;
-	float A[3], B[3], col[3];
+	float A[3], B[3], col[3], d[3];
 	int i;
 
 	look_ab(look, t, A, B);
@@ -962,7 +1030,14 @@ static void draw_layer(int look, float t)
 		int fin = look == 1 && custom_final;
 		float g = fin ? RAMP(a_grade, t) : 0;
 		const float *Ac = look_cyan[0], *Bc = look_cyan[1];
-		if (sh_tex[i] >= 0) {
+		if (mask_mode) {
+			/* glass look: as translucent as its light; solid look: fully covered */
+			float w = look == 0 ? clampf(RAMP(a_glass, t) * glass_opacity, 0, 1) : 1;
+			if (sh_tex[i] < 0 && look == 0) continue;
+			mask_mode = 0;
+			tev_modulate(NULL, rgb(w, w, w, 1), GX_CS_SCALE_1);
+			mask_mode = 1;
+		} else if (sh_tex[i] >= 0) {
 			if (fin) tev_look_final(&lum_tex[sh_tex[i]], &fin_tex[sh_tex[i]], Ac, Bc, g);
 			else tev_look(&lum_tex[sh_tex[i]], A, B);
 		} else {
@@ -988,13 +1063,14 @@ static void draw_layer(int look, float t)
 		float sy = (bx[3] - bx[1] + 1) / (gc_glyph[3] - gc_glyph[1] + 1);
 		float x0 = bx[0] - gc_glyph[0] * sx, y0 = bx[1] - gc_glyph[1] * sy;
 
-		ramp3(gc_rgb, n_gc, tt, col);
+		text_col(gc_rgb, n_gc, a_gamecube_rgb, N_DEF_GC, txt_gc, tt, col);
 		quad_desc_scene(el_mtx[EL_GC]);
 		tev_modulate(&letters.texobj[0], rgb(col[0], col[1], col[2], 1), GX_CS_SCALE_1);
 		rect(x0, y0, x0 + gc_tw * sx, y0 + gc_th * sy, 0, 0, 1, 1);
 
-		ramp3(nin_rgb, n_nin, tt, col);
-		if (col[0] + col[1] + col[2] > 0.003f) {
+		text_col(nin_rgb, n_nin, a_nintendo_rgb, N_DEF_NIN, txt_nin, tt, col);
+		ramp3(a_nintendo_rgb, N_DEF_NIN, tt, d);
+		if (d[0] + d[1] + d[2] > 0.003f) {
 			blend_none();
 			tev_modulate(NULL, rgb(col[0], col[1], col[2], 1), GX_CS_SCALE_1);
 			GX_SetNumTexGens(0);
@@ -1102,8 +1178,9 @@ static void screen_rect(float y0, float y1)
 	rect(vid->ortho_l, y0, vid->ortho_r, y1, 0, 0, 1, 1);
 }
 
-static void composite(float t, int f, int slam)
+static void composite(float t, int f, int slam, int mask)
 {
+	GXTexObj *lt = mask ? tex_mlayer : tex_layer;
 	int i;
 	GX_SetZMode(GX_FALSE, GX_ALWAYS, GX_FALSE);
 	blend_add();
@@ -1118,37 +1195,91 @@ static void composite(float t, int f, int slam)
 			float y1 = anchor + (vid->ortho_b - anchor) * ls[i].sy - ls[i].dy * ay;
 			if (ls[i].w <= 0)
 				continue;
-			tev_modulate(&tex_layer[ls[i].look], rgb(ls[i].w, ls[i].w, ls[i].w, 1), GX_CS_SCALE_1);
+			tev_modulate(&lt[ls[i].look], rgb(ls[i].w, ls[i].w, ls[i].w, 1), GX_CS_SCALE_1);
 			screen_rect(y0, y1);
 		}
 	} else {
-		tev_modulate(&tex_layer[t < A_SLAM_FIRST ? 0 : 1], rgb(1, 1, 1, 1), GX_CS_SCALE_1);
+		tev_modulate(&lt[t < A_SLAM_FIRST ? 0 : 1], rgb(1, 1, 1, 1), GX_CS_SCALE_1);
 		screen_rect(vid->ortho_t, vid->ortho_b);
 	}
+	mask_mode = mask;
+	mask_div = ink_v;
 	draw_streaks(t);
+	mask_mode = 0;
+}
+
+/* the ink glow (light background): out = out * (1 - a) + ink * a,
+   a = clamp((b1 * k1 + b2 * k2) * 4) / 2 from the mask's glow */
+static void tev_ink_glow(float k1, float k2, const float *ink)
+{
+	GX_SetNumTevStages(ink ? 4 : 3);
+	GX_SetTevKColor(GX_KCOLOR0, rgb(k1, k1, k1, 1));
+	GX_SetTevKColor(GX_KCOLOR1, rgb(k2, k2, k2, 1));
+	GX_SetTevKColor(GX_KCOLOR2, rgb(0.5f, 0.5f, 0.5f, 1));
+	if (ink) GX_SetTevKColor(GX_KCOLOR3, rgb(ink[0], ink[1], ink[2], 1));
+	GX_LoadTexObj(&tex_b1, GX_TEXMAP0);
+	GX_LoadTexObj(&tex_b2, GX_TEXMAP1);
+	GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLORNULL);
+	GX_SetTevKColorSel(GX_TEVSTAGE0, GX_TEV_KCSEL_K0);
+	GX_SetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_TEXC, GX_CC_KONST, GX_CC_ZERO);
+	GX_SetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+	GX_SetTevOrder(GX_TEVSTAGE1, GX_TEXCOORD0, GX_TEXMAP1, GX_COLORNULL);
+	GX_SetTevKColorSel(GX_TEVSTAGE1, GX_TEV_KCSEL_K1);
+	GX_SetTevColorIn(GX_TEVSTAGE1, GX_CC_ZERO, GX_CC_TEXC, GX_CC_KONST, GX_CC_CPREV);
+	GX_SetTevColorOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_4, GX_TRUE, GX_TEVPREV);
+	GX_SetTevOrder(GX_TEVSTAGE2, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLORNULL);
+	GX_SetTevKColorSel(GX_TEVSTAGE2, GX_TEV_KCSEL_K2);
+	GX_SetTevColorIn(GX_TEVSTAGE2, GX_CC_ZERO, GX_CC_CPREV, GX_CC_KONST, GX_CC_ZERO);
+	GX_SetTevColorOp(GX_TEVSTAGE2, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+	if (ink) {
+		GX_SetTevOrder(GX_TEVSTAGE3, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLORNULL);
+		GX_SetTevKColorSel(GX_TEVSTAGE3, GX_TEV_KCSEL_K3);
+		GX_SetTevColorIn(GX_TEVSTAGE3, GX_CC_ZERO, GX_CC_CPREV, GX_CC_KONST, GX_CC_ZERO);
+		GX_SetTevColorOp(GX_TEVSTAGE3, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+	}
+	for (int st = 0; st < (ink ? 4 : 3); st++) {
+		GX_SetTevAlphaIn(st, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO);
+		GX_SetTevAlphaOp(st, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+	}
 }
 
 static void output(float glow, float fade)
 {
+	int ink = bg_mode && ink_v < 1;
 	GX_SetZMode(GX_FALSE, GX_ALWAYS, GX_FALSE);
 	quad_desc();
 	blend_none();
 	tev_modulate(&tex_scene, rgb(1, 1, 1, 1), GX_CS_SCALE_1);
 	screen_rect(vid->ortho_t, vid->ortho_b);
-	if (bg[0] + bg[1] + bg[2] > 0) {
-		/* background, "screen" blend: out = scene + bg * (1 - scene) */
-		GX_SetBlendMode(GX_BM_BLEND, GX_BL_INVDSTCLR, GX_BL_ONE, GX_LO_CLEAR);
-		tev_modulate(NULL, rgb(bg[0], bg[1], bg[2], 1), GX_CS_SCALE_1);
+	if (bg_mode) {
+		/* the background where the picture doesn't cover it: + bg * (1 - mask) */
+		blend_add();
+		tev_modulate(&tex_mask, rgb(1, 1, 1, 1), GX_CS_SCALE_1);
+		GX_SetTevKColor(GX_KCOLOR0, rgb(bg[0], bg[1], bg[2], 1));
+		GX_SetTevColorIn(GX_TEVSTAGE0, GX_CC_KONST, GX_CC_ZERO, GX_CC_TEXC, GX_CC_ZERO);
 		screen_rect(vid->ortho_t, vid->ortho_b);
 	}
 	if (glow > 0.001f) {
 		/* threshold stage gave (x - thr) * 2, the preview uses (x - thr) / (1 - thr) */
 		float s = glow / (2 * (1 - A_BLOOM_THR)) / 4;
-		blend_add();
-		tev_modulate(&tex_b1, rgb(0.9f * s * bloom_tint[0], 0.9f * s * bloom_tint[1], 0.9f * s * bloom_tint[2], 1), GX_CS_SCALE_4);
-		screen_rect(vid->ortho_t, vid->ortho_b);
-		tev_modulate(&tex_b2, rgb(1.2f * s * bloom_tint[0], 1.2f * s * bloom_tint[1], 1.2f * s * bloom_tint[2], 1), GX_CS_SCALE_4);
-		screen_rect(vid->ortho_t, vid->ortho_b);
+		if (ink) {
+			float t1 = 0.9f * s, t2 = 1.2f * s, m = bloom_tint[0];
+			if (bloom_tint[1] > m) m = bloom_tint[1];
+			if (bloom_tint[2] > m) m = bloom_tint[2];
+			/* darken by (1 - a), then add ink * a */
+			GX_SetBlendMode(GX_BM_BLEND, GX_BL_ZERO, GX_BL_INVSRCCLR, GX_LO_CLEAR);
+			tev_ink_glow(t1 * m / ink_v, t2 * m / ink_v, NULL);
+			screen_rect(vid->ortho_t, vid->ortho_b);
+			blend_add();
+			tev_ink_glow(t1 * m / ink_v, t2 * m / ink_v, bloom_tint);
+			screen_rect(vid->ortho_t, vid->ortho_b);
+		} else {
+			blend_add();
+			tev_modulate(&tex_b1, rgb(0.9f * s * bloom_tint[0], 0.9f * s * bloom_tint[1], 0.9f * s * bloom_tint[2], 1), GX_CS_SCALE_4);
+			screen_rect(vid->ortho_t, vid->ortho_b);
+			tev_modulate(&tex_b2, rgb(1.2f * s * bloom_tint[0], 1.2f * s * bloom_tint[1], 1.2f * s * bloom_tint[2], 1), GX_CS_SCALE_4);
+			screen_rect(vid->ortho_t, vid->ortho_b);
+		}
 	}
 	if (fade < 0.999f) {
 		GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
@@ -1175,14 +1306,29 @@ void promo_draw(float t)
 			draw_layer(look, t);
 			copy_pass(buf_layer[look], p);
 		}
+		if (bg_mode)
+			for (p = 0; p < 2; p++) {
+				video_begin_pass(vid, p);
+				mask_mode = 1;
+				mask_div = ink_v;
+				draw_layer(look, t);
+				mask_mode = 0;
+				copy_pass(buf_mlayer[look], p);
+			}
 	}
 
 	/* 2. composite (AA, two passes) */
 	for (p = 0; p < 2; p++) {
 		video_begin_pass(vid, p);
-		composite(t, f, slam);
+		composite(t, f, slam, 0);
 		copy_pass(buf_scene, p);
 	}
+	if (bg_mode)
+		for (p = 0; p < 2; p++) {
+			video_begin_pass(vid, p);
+			composite(t, f, slam, 1);
+			copy_pass(buf_mask, p);
+		}
 
 	/* 3. glow: 24-bit EFB without AA; half resolution (sigma 3), then quarter (sigma 4) */
 	if (glow > 0.001f) {
@@ -1196,7 +1342,8 @@ void promo_draw(float t)
 		quad_desc();
 		/* clear the glow area first (the EFB is undefined after the format change) */
 		copy_tex(buf_t1, 0, 0, FW / 2, FH / 2, 0, 1);
-		blur_pass(&tex_scene, FW / 2, FH / 2, 1, 1.5f * SCALE, 1);
+		/* (on a light background the glow is ink: from the mask) */
+		blur_pass(bg_mode && ink_v < 1 ? &tex_mask : &tex_scene, FW / 2, FH / 2, 1, 1.5f * SCALE, 1);
 		copy_tex(buf_t1, 0, 0, FW / 2, FH / 2, 0, 1);
 		blur_pass(&tex_t1, FW / 2, FH / 2, 0, 1.5f * SCALE, 0);
 		copy_tex(buf_b1, 0, 0, FW / 2, FH / 2, 0, 0);

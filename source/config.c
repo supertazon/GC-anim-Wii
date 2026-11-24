@@ -24,6 +24,7 @@
  *   glass = 113,21,33
  *   glass_opacity = 100
  *   background = 0,0,0   ; also the final fade
+ *   promo_background = 235,235,238 ; the promo intro's background (default: background)
  *   text = 255,255,255
  *   [text]
  *   letters = WIIBREW    ; replaces NINTENDO (A-Z, spaces; up to 16)
@@ -180,6 +181,8 @@ int config_load(Config *c, const char *path)
 			c->glass_opacity = atoi(v) < 0 ? 0 : atoi(v) > 400 ? 400 : atoi(v);
 		else if (!strcasecmp(k, "background") || !strcasecmp(k, "bg"))
 			c->have_background = parse_rgb(v, c->background);
+		else if (!strcasecmp(k, "promo_background"))
+			c->have_promo_background = parse_rgb(v, c->promo_background);
 		else if (!strcasecmp(k, "text"))
 			c->have_text = parse_rgb(v, c->text);
 		else if (!strcasecmp(k, "letters")) {
