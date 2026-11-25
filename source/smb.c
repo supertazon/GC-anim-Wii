@@ -740,7 +740,13 @@ static float fall_fit(int flag, float vel, float g, float top, float base, float
    logo (released by the end's loop) */
 static int fw_hold;
 
-static int castle_step(int ending_mode, int *quiet)
+/* (the view it lays the game out in: while the level is still on screen, a scratch one,
+   so the level stays as it was at the flagpole: the game scrolls on towards the castle,
+   and laid out from that scroll its left edge, and the left strip's fade with it, would
+   sweep across the still picture) */
+static SmbView view_unseen;
+
+static int castle_step(int ending_mode, int *quiet, SmbView *out)
 {
 	int busy, k;
 	if (fw_hold && nes.ram[RAM_ENGINE] == ENG_ENDLEVEL &&
@@ -764,7 +770,7 @@ static int castle_step(int ending_mode, int *quiet)
 			busy = 1;                         /* a firework */
 	*quiet = busy ? 0 : *quiet + 1;
 	lcfg.ending = ending_mode;
-	smb_layout(&nes, &lcfg, &view);
+	smb_layout(&nes, &lcfg, out);
 	lcfg.ending = 0;
 	return 1;
 }
@@ -1362,7 +1368,7 @@ static int smb_play_run(Video *vid, const Config *cfg, IntroState *st, int have_
 				if (victory_on)
 					game_step();
 				if (castle_on) {
-					castle_on = castle_step(0, &quiet);
+					castle_on = castle_step(0, &quiet, &view_unseen);
 					if (hud.on)
 						hud_build();   /* (the count, in the corner) */
 					view.ply_on = 1;
@@ -1520,7 +1526,7 @@ static int smb_play_run(Video *vid, const Config *cfg, IntroState *st, int have_
 						game_step();
 					}
 					if (castle_on) {
-						castle_on = castle_step(1, &quiet);
+						castle_on = castle_step(1, &quiet, &view);
 						view.ply_on = last_ply.on;
 						view.ply_x = last_ply.x;
 						view.ply_y = last_ply.y;
