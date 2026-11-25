@@ -192,7 +192,7 @@ This builds `GC-anim-Wii.dol` (named after the project folder); copy it to `apps
 - [The BitBuilt community](https://bitbuilt.net/)
 - [Aurelio](https://github.com/Aurelio92/) for the help with Wii homebrew and IPL asset extraction (v1)
 - [Trevor](https://github.com/trevor403) for cubeboot, which inspired this project
-- [DacoTaco](https://github.com/DacoTaco) for the return-to-menu fix
+- [DacoTaco](https://github.com/DacoTaco) for the return-to-menu fix (v1)
 - Owen, Luig and Extrems' Discord server (v1)
 - IPL descrambler by Segher Boessenkool (via flippyboot's ipl-decoder)
 - [stb_image](https://github.com/nothings/stb) (public domain) for the custom logotype
