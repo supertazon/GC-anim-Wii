@@ -129,6 +129,10 @@ A very dark grey such as `40,40,45` keeps the 3D look; pure black flattens the m
 
 ## The promo intro
 
+<p align="center">
+  <img src="assets/promo-intro-25fps.gif" alt="Promo intro" width="592">
+</p>
+
 `intro = promo` plays the alternative GameCube intro seen in [Nintendo's promotional videos](https://youtu.be/CjkYhI2MaPQ?si=BdSUqR9RyB1k-F6U&t=15): light streaks draw the cube, a glass cube "slams" into the solid logo, then the picture fades.
 - **Logo, NINTENDO letters and GAMECUBE logotype:** read at run time from your IPL dump (`boot_demo_logo_mark` and `boot_demo_mat28` models), drawn as an isometric view in the promo's colors.
 - **Sound:** `promo.wav`, included in the release, in `apps/gc-anim-wii/` (PCM 16-bit, mono or stereo, any rate). It isn't in the IPL. Without it the intro plays silently.
