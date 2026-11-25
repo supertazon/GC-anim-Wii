@@ -4,7 +4,7 @@
   <img src="assets/smb-easter-egg-cut.gif" alt="SMB in GameCube IPL" width="444">
 </p>
 
-Press a button early in the animation and the GameCube boot animation turns into a playable Super Mario Bros., drawn onto the big cube's face: World 1-1 only, or the whole game, with a single life. Only works when setting the intro animation to IPL, does not work with the promo intro. When the run is over (the 1-1 flagpole, a lost life or the end of the game), the animation picks up again and ends as usual.
+Press B (on the GC pad, or 1 on the Wiimote sideways) early in the animation and the GameCube boot animation turns into a playable Super Mario Bros., drawn onto the big cube's face: World 1-1 only, or the whole game, with a single life. Only works when setting the intro animation to IPL, does not work with the promo intro. When the run is over (the 1-1 flagpole, a lost life or the end of the game), the animation picks up again and ends as usual.
 
 Nothing from the game is distributed. The program runs **your own copy of the game** (`smb.nes`) in a small NES emulator written for this project. The game's music is played on the GameCube IPL's own instruments, taken from your IPL dump.
 
