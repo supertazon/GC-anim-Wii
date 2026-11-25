@@ -1,7 +1,7 @@
 # Super Mario Bros. easter egg
 
 <p align="center">
-  <img src="smb-easter-egg-cut.gif" alt="SMB in GameCube IPL" width="444">
+  <img src="smb-easter-egg-cut.gif" alt="SMB in GameCube IPL">
 </p>
 
 Press a button early in the animation and the GameCube boot animation turns into a playable Super Mario Bros., drawn onto the big cube's face: World 1-1 only, or the whole game, with a single life. Only works when setting the intro animation to IPL, does not work with the promo intro. When the run is over (the 1-1 flagpole, a lost life or the end of the game), the animation picks up again and ends as usual.
